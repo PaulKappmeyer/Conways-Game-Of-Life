@@ -7,21 +7,21 @@ public class Grid {
 
 	private int numCols;
 	private int numRows;
-	private int size;
+	private int cellsize;
 	private Cell[][] cells;
 
 	private int numGenerations;
 
 	private boolean showGridlines = true;
 
-	public Grid(int numCols, int numRows, int size) {
+	public Grid(int numCols, int numRows, int cellsize) {
 		this.numCols = numCols;
 		this.numRows = numRows;
-		this.size = size;
+		this.cellsize = cellsize;
 		cells = new Cell[numCols][numRows];
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {			
-				cells[x][y] = new Cell(x * size, y * size, size);
+				cells[x][y] = new Cell(x * cellsize, y * cellsize);
 			}
 		}
 	}
@@ -29,7 +29,7 @@ public class Grid {
 	public void draw(Graphics graphics) {
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {
-				cells[x][y].draw(graphics);
+				cells[x][y].draw(graphics, cellsize);
 			}	
 		}
 
@@ -37,10 +37,10 @@ public class Grid {
 		if (showGridlines) {
 			graphics.setColor(Color.LIGHT_GRAY);
 			for (int x = 0; x <= numCols; x++) {
-				graphics.drawLine(x*size, 0, x*size, numRows*size);
+				graphics.drawLine(x*cellsize, 0, x*cellsize, numRows*cellsize);
 			}
 			for (int y = 0; y <= numRows; y++) { 
-				graphics.drawLine(0, y*size, numCols*size, y*size);
+				graphics.drawLine(0, y*cellsize, numCols*cellsize, y*cellsize);
 			}
 		}
 	}
@@ -144,13 +144,26 @@ public class Grid {
 		}
 		return next;
 	}
-
+	
 	public int getGeneration() {
 		return numGenerations;
 	}
 	
-	public int getSize() {
-		return size;
+	public void changeCellsize(int amount) {
+		cellsize += amount;
+		if (cellsize < 1) {
+			cellsize = 1;
+		}
+		
+		for (int x = 0; x < numCols; x++) {
+			for (int y = 0; y < numRows; y++) {			
+				cells[x][y].updatePos(x * cellsize, y * cellsize);
+			}
+		}
+	}
+	
+	public int getCellsize() {
+		return cellsize;
 	}
 
 }

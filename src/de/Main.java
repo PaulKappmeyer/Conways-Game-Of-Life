@@ -7,10 +7,12 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 
 import gameengine.GameBase;
 
-public class Main extends GameBase implements KeyListener, MouseListener, MouseMotionListener {
+public class Main extends GameBase implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
 
 	public static final int SCREEN_WIDTH = 1200;
 	public static final int SCREEN_HEIGHT = 900;
@@ -34,9 +36,9 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 
 	@Override
 	public void init() {
-		int size = 10;
+		int cellsize = 10;
 
-		grid = new Grid((int) (SCREEN_WIDTH / size), (int) ((SCREEN_HEIGHT * 0.9) / size), size);
+		grid = new Grid((int) (SCREEN_WIDTH / cellsize), (int) ((SCREEN_HEIGHT * 0.9) / cellsize), cellsize);
 		grid.setAllRandom();
 		redraw();
 
@@ -44,6 +46,7 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		window.addKeyListener(this);
 		window.addMouseListener(this);
 		window.addMouseMotionListener(this);
+		window.addMouseWheelListener(this);
 	}
 
 
@@ -126,8 +129,8 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		} else {
 			int mouseX = e.getX() - window.getInsetX();
 			int mouseY = e.getY() - window.getInsetY();
-			int xInd = mouseX / grid.getSize();
-			int yInd = mouseY / grid.getSize();
+			int xInd = mouseX / grid.getCellsize();
+			int yInd = mouseY / grid.getCellsize();
 			
 			grid.toggleState(xInd, yInd);
 			redraw();
@@ -149,8 +152,8 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		}
 		int mouseX = e.getX() - window.getInsetX();
 		int mouseY = e.getY() - window.getInsetY();
-		int xInd = mouseX / grid.getSize();
-		int yInd = mouseY / grid.getSize();
+		int xInd = mouseX / grid.getCellsize();
+		int yInd = mouseY / grid.getCellsize();
 	
 		draggState = grid.getState(xInd, yInd).toggle();
 	}
@@ -167,8 +170,8 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		
 		int mouseX = e.getX() - window.getInsetX();
 		int mouseY = e.getY() - window.getInsetY();
-		int xInd = mouseX / grid.getSize();
-		int yInd = mouseY / grid.getSize();
+		int xInd = mouseX / grid.getCellsize();
+		int yInd = mouseY / grid.getCellsize();
 		
 		grid.setState(xInd, yInd, draggState);
 		redraw();
@@ -176,5 +179,11 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		grid.changeCellsize(-e.getWheelRotation());
+		redraw();
 	}
 }

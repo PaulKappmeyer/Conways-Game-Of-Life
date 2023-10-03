@@ -9,21 +9,19 @@ public class Cell {
 	
 	private int xPos;
 	private int yPos;
-	private int size;
 	private Cellstate state;
 
-	public Cell(int xPos, int yPos, int size, Cellstate state) {
+	public Cell(int xPos, int yPos, Cellstate state) {
 		this.xPos = xPos;
 		this.yPos = yPos;
-		this.size = size;
 		this.state = state;
 	}
 
-	public Cell(int xPos, int yPos, int size) {
-		this(xPos, yPos, size, Cellstate.DEAD);
+	public Cell(int xPos, int yPos) {
+		this(xPos, yPos, Cellstate.DEAD);
 	}
 
-	public void draw(Graphics graphics) {
+	public void draw(Graphics graphics, int size) {
 		graphics.setColor(state.getColor());
 		graphics.fillRect(xPos, yPos, size, size);
 	}
@@ -43,6 +41,11 @@ public class Cell {
 
 	public Cellstate getState() {
 		return state;
+	}
+	
+	public void updatePos(int xPos, int yPos) {
+		this.xPos = xPos;
+		this.yPos = yPos;
 	}
 
 }
