@@ -7,13 +7,17 @@ public class Grid {
 
 	private int numCols;
 	private int numRows;
+	private int size;
 	private Cell[][] grid;
 
 	private int numGenerations;
-	
+
+	private boolean showGridlines = true;
+
 	public Grid(int numCols, int numRows, int size) {
 		this.numCols = numCols;
 		this.numRows = numRows;
+		this.size = size;
 		grid = new Cell[numCols][numRows];
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {			
@@ -28,9 +32,21 @@ public class Grid {
 				grid[x][y].draw(graphics);
 			}	
 		}
-		
-		graphics.setColor(Color.BLACK);
-		graphics.drawString("Generation: " + numGenerations, (int) (Main.SCREEN_WIDTH * 0.92), 15);
+
+		// grid
+		if (showGridlines) {
+			graphics.setColor(Color.LIGHT_GRAY);
+			for (int x = 0; x <= numCols; x++) {
+				graphics.drawLine(x*size, 0, x*size, numRows*size);
+			}
+			for (int y = 0; y <= numRows; y++) { 
+				graphics.drawLine(0, y*size, numCols*size, y*size);
+			}
+		}
+	}
+
+	public void toggleGridlines() {
+		showGridlines = !showGridlines;
 	}
 	
 	public void setAllRandom() {
@@ -48,7 +64,7 @@ public class Grid {
 				grid[x][y].setState(state);
 			}
 		}
-		
+
 		numGenerations = 0;
 	}
 
@@ -61,7 +77,7 @@ public class Grid {
 		}
 		numGenerations++;
 	}
-	
+
 	public static Cellstate[][] calculateNextGeneration(Cell[][] grid){
 		// calculate next generation
 		int numCols = grid.length;
@@ -102,7 +118,7 @@ public class Grid {
 		}
 		return next;
 	}
-	
+
 	public int getGeneration() {
 		return numGenerations;
 	}
