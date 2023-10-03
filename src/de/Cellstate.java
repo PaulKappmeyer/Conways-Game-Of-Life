@@ -22,4 +22,17 @@ public enum Cellstate {
 	public Color getColor() {
 		return color;
 	}
+
+	public Cellstate toggle() {
+		switch (this) {
+		case DEAD:
+			return Cellstate.ALIVE;
+		
+		case ALIVE:
+			return Cellstate.DEAD;
+		
+		default:
+			return Cellstate.DEAD;
+		}
+	}
 }

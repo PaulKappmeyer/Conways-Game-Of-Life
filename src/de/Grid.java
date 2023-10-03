@@ -8,7 +8,7 @@ public class Grid {
 	private int numCols;
 	private int numRows;
 	private int size;
-	private Cell[][] grid;
+	private Cell[][] cells;
 
 	private int numGenerations;
 
@@ -18,10 +18,10 @@ public class Grid {
 		this.numCols = numCols;
 		this.numRows = numRows;
 		this.size = size;
-		grid = new Cell[numCols][numRows];
+		cells = new Cell[numCols][numRows];
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {			
-				grid[x][y] = new Cell(x * size, y * size, size);
+				cells[x][y] = new Cell(x * size, y * size, size);
 			}
 		}
 	}
@@ -29,7 +29,7 @@ public class Grid {
 	public void draw(Graphics graphics) {
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {
-				grid[x][y].draw(graphics);
+				cells[x][y].draw(graphics);
 			}	
 		}
 
@@ -49,10 +49,36 @@ public class Grid {
 		showGridlines = !showGridlines;
 	}
 	
+	public void toggleState(int xInd, int yInd) {
+		if (xInd < 0 || xInd >= numCols || yInd < 0 || yInd >= numRows) {
+			return;
+		}
+		
+		cells[xInd][yInd].setState(cells[xInd][yInd].getState().toggle());
+		
+		numGenerations = 0;
+	}
+	
+	public void setState(int xInd, int yInd, Cellstate state) {
+		if (xInd < 0 || xInd >= numCols || yInd < 0 || yInd >= numRows) {
+			return;
+		}
+		cells[xInd][yInd].setState(state);
+
+		numGenerations = 0;
+	}
+	
+	public Cellstate getState(int xInd, int yInd) {
+		if (xInd < 0 || xInd >= numCols || yInd < 0 || yInd >= numRows) {
+			return null;
+		}
+		return cells[xInd][yInd].getState();
+	}
+	
 	public void setAllRandom() {
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {
-				grid[x][y].setStateRandom();
+				cells[x][y].setStateRandom();
 			}	
 		}
 		numGenerations = 0;
@@ -61,7 +87,7 @@ public class Grid {
 	public void setAll(Cellstate state) {
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {
-				grid[x][y].setState(state);
+				cells[x][y].setState(state);
 			}
 		}
 
@@ -69,10 +95,10 @@ public class Grid {
 	}
 
 	public void nextGeneration() {
-		Cellstate[][] states = calculateNextGeneration(grid);
+		Cellstate[][] states = calculateNextGeneration(cells);
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {
-				grid[x][y].setState(states[x][y]);
+				cells[x][y].setState(states[x][y]);
 			}
 		}
 		numGenerations++;
@@ -121,6 +147,10 @@ public class Grid {
 
 	public int getGeneration() {
 		return numGenerations;
+	}
+	
+	public int getSize() {
+		return size;
 	}
 
 }
