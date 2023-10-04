@@ -7,21 +7,13 @@ public class Cell {
 
 	private static final Random random = new Random();
 	
-	private int xPos;
-	private int yPos;
 	private Cellstate state;
 
-	public Cell(int xPos, int yPos, Cellstate state) {
-		this.xPos = xPos;
-		this.yPos = yPos;
+	public Cell(Cellstate state) {
 		this.state = state;
 	}
 
-	public Cell(int xPos, int yPos) {
-		this(xPos, yPos, Cellstate.DEAD);
-	}
-
-	public void draw(Graphics graphics, int size) {
+	public void draw(Graphics graphics, int xPos, int yPos, int size) {
 		graphics.setColor(state.getColor());
 		graphics.fillRect(xPos, yPos, size, size);
 	}
@@ -42,10 +34,4 @@ public class Cell {
 	public Cellstate getState() {
 		return state;
 	}
-	
-	public void updatePos(int xPos, int yPos) {
-		this.xPos = xPos;
-		this.yPos = yPos;
-	}
-
 }

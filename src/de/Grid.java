@@ -13,6 +13,9 @@ public class Grid {
 	private int numGenerations;
 
 	private boolean showGridlines = true;
+	
+	private int xOffset;
+	private int yOffset;
 
 	public Grid(int numCols, int numRows, int cellsize) {
 		this.numCols = numCols;
@@ -21,28 +24,43 @@ public class Grid {
 		cells = new Cell[numCols][numRows];
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {			
-				cells[x][y] = new Cell(x * cellsize, y * cellsize);
+				cells[x][y] = new Cell(Cellstate.DEAD);
 			}
 		}
+		// center board
+		xOffset = (Main.BOARD_WIDTH - numCols * cellsize) / 2;
+		yOffset = (Main.BOARD_HEIGHT - numRows * cellsize) / 2;
 	}
-
+	
 	public void draw(Graphics graphics) {
+		// save offset in local variable for thread safety consistency -> avoid flickering
+		int xOffset = getXOffset();
+		int yOffset = getYOffset();
+		int cellsize = getCellsize();
+		graphics.translate(xOffset, yOffset);
+		
+		// draw cells
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {
-				cells[x][y].draw(graphics, cellsize);
+				cells[x][y].draw(graphics, x * cellsize, y * cellsize, cellsize);
 			}	
 		}
 
-		// grid
-		if (showGridlines) {
+		// draw gridlines
+		if (showGridlines && cellsize >= 3) {
 			graphics.setColor(Color.LIGHT_GRAY);
 			for (int x = 0; x <= numCols; x++) {
-				graphics.drawLine(x*cellsize, 0, x*cellsize, numRows*cellsize);
+				int colX = x*cellsize;
+				graphics.drawLine(colX, 0, colX, numRows*cellsize);
 			}
 			for (int y = 0; y <= numRows; y++) { 
-				graphics.drawLine(0, y*cellsize, numCols*cellsize, y*cellsize);
+				int rowY = y*cellsize;
+				graphics.drawLine(0, rowY, numCols*cellsize, rowY);
 			}
 		}
+		
+		// reset offset
+		graphics.translate(-xOffset, -yOffset);
 	}
 
 	public void toggleGridlines() {
@@ -149,21 +167,31 @@ public class Grid {
 		return numGenerations;
 	}
 	
-	public void changeCellsize(int amount) {
-		cellsize += amount;
+	public synchronized void setCellsize(int cellsize) {
 		if (cellsize < 1) {
-			cellsize = 1;
+			return;
 		}
-		
-		for (int x = 0; x < numCols; x++) {
-			for (int y = 0; y < numRows; y++) {			
-				cells[x][y].updatePos(x * cellsize, y * cellsize);
-			}
-		}
+		this.cellsize = cellsize;
 	}
 	
-	public int getCellsize() {
+	public synchronized int getCellsize() {
 		return cellsize;
+	}
+	
+	public synchronized void setXOffset(int xOffset) {
+		this.xOffset = xOffset;
+	}
+	
+	public synchronized void setYOffset(int yOffset) {
+		this.yOffset = yOffset;
+	}
+	
+	public synchronized int getXOffset() {
+		return xOffset;
+	}
+	
+	public synchronized int getYOffset() {
+		return yOffset;
 	}
 
 }

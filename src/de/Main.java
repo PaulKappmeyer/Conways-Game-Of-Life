@@ -10,14 +10,21 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
+import javax.swing.SwingUtilities;
+
 import gameengine.GameBase;
 
 public class Main extends GameBase implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
 
+	// size of the window (in pixel)
 	public static final int SCREEN_WIDTH = 1200;
 	public static final int SCREEN_HEIGHT = 900;
 
-	private static final double GENERATION_SPEED = 0.25;
+	// size of part with the grid (in pixel)
+	public static final int BOARD_WIDTH = 1200;
+	public static final int BOARD_HEIGHT = 810;
+
+	private static final double GENERATION_SPEED = 0.025;
 	private static float currentGenerationTimer;
 
 	public static Grid grid;
@@ -25,10 +32,13 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 	private static boolean running;
 	private static boolean redraw;
 
-	private static final String INFO_TEXT = "Press 'Space' to run/stop simulation. Press 'G' to toggle the gridlines";
-	
+	private static final String INFO_TEXT = "Press 'Space' to run/stop simulation. Press 'G' to toggle the gridlines. "
+			+ "Use the mouse wheel to zoom. Use the right mouse button to change the state of the cells. Use the left mouse button to move.";
+
 	private static Cellstate draggState;
-	
+	private static int mousePressedX;
+	private static int mousePressedY;
+
 	public static void main(String[] args) {
 		Main main = new Main();
 		main.start("Conways Game Of Life", SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -36,9 +46,7 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 
 	@Override
 	public void init() {
-		int cellsize = 10;
-
-		grid = new Grid((int) (SCREEN_WIDTH / cellsize), (int) ((SCREEN_HEIGHT * 0.9) / cellsize), cellsize);
+		grid = new Grid(100, 100, 10);
 		grid.setAllRandom();
 		redraw();
 
@@ -48,8 +56,7 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		window.addMouseMotionListener(this);
 		window.addMouseWheelListener(this);
 	}
-
-
+	
 	@Override
 	public void update(double tslf) {
 		if (!running) {
@@ -71,14 +78,22 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		if (!redraw == true) {
 			return;
 		}
-		graphics.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
+		// grid background
+		graphics.setColor(Color.WHITE);
+		graphics.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
+		
 		// draw grid and cells
 		grid.draw(graphics);
 
+		
+		// text background
+		graphics.setColor(Color.LIGHT_GRAY);
+		graphics.fillRect(0, BOARD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
+		
 		// draw text
 		graphics.setColor(Color.BLACK);
 		graphics.drawString("Generation: " + grid.getGeneration(), 10, (int) (SCREEN_HEIGHT * 0.915));
+		graphics.drawString("Cellsize: " + grid.getCellsize(), 150, (int) (SCREEN_HEIGHT * 0.915));
 
 		graphics.drawString(INFO_TEXT, 10, (int) (SCREEN_HEIGHT * 0.930));
 
@@ -110,7 +125,7 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 			grid.toggleGridlines();
 			redraw();
 			break;
-			
+
 		case KeyEvent.VK_ESCAPE:
 			System.exit(0);
 			break;
@@ -126,15 +141,24 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 	public void mouseClicked(MouseEvent e) {
 		if (running) {
 			toggleRunning();
-		} else {
-			int mouseX = e.getX() - window.getInsetX();
-			int mouseY = e.getY() - window.getInsetY();
-			int xInd = mouseX / grid.getCellsize();
-			int yInd = mouseY / grid.getCellsize();
-			
-			grid.toggleState(xInd, yInd);
-			redraw();
+			return;
 		}
+		
+		int mouseX = e.getX() - window.getInsetX();
+		int mouseY = e.getY() - window.getInsetY();
+		int xInd = (mouseX - grid.getXOffset()) / grid.getCellsize();
+		int yInd = (mouseY - grid.getYOffset()) / grid.getCellsize();
+		
+		switch (e.getButton()) {
+		case MouseEvent.BUTTON1:
+			grid.toggleState(xInd, yInd);
+			break;
+			
+		case MouseEvent.BUTTON3:
+			break;
+		}
+		
+		redraw();
 	}
 
 	@Override
@@ -144,18 +168,22 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 	@Override
 	public void mouseExited(MouseEvent e) {
 	}
-	
+
 	@Override
 	public void mousePressed(MouseEvent e) {
-		if (running) {
-			return;
-		}
 		int mouseX = e.getX() - window.getInsetX();
 		int mouseY = e.getY() - window.getInsetY();
-		int xInd = mouseX / grid.getCellsize();
-		int yInd = mouseY / grid.getCellsize();
-	
-		draggState = grid.getState(xInd, yInd).toggle();
+		int xInd = (mouseX - grid.getXOffset()) / grid.getCellsize();
+		int yInd = (mouseY - grid.getYOffset()) / grid.getCellsize();
+
+		draggState = null;
+		if (SwingUtilities.isLeftMouseButton(e) && !running) {
+			draggState = grid.getState(xInd, yInd).toggle();
+		}
+		if (SwingUtilities.isRightMouseButton(e)) {
+			mousePressedX = mouseX;
+			mousePressedY = mouseY;
+		}
 	}
 
 	@Override
@@ -164,16 +192,22 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		if (running || draggState == null) {
-			return;
-		}
-		
 		int mouseX = e.getX() - window.getInsetX();
 		int mouseY = e.getY() - window.getInsetY();
-		int xInd = mouseX / grid.getCellsize();
-		int yInd = mouseY / grid.getCellsize();
+		int xInd = (mouseX - grid.getXOffset()) / grid.getCellsize();
+		int yInd = (mouseY - grid.getYOffset()) / grid.getCellsize();
+
+		if (SwingUtilities.isLeftMouseButton(e) && draggState != null) {
+			grid.setState(xInd, yInd, draggState);
+		}
+		if (SwingUtilities.isRightMouseButton(e)) {	
+			grid.setXOffset(grid.getXOffset() + mouseX - mousePressedX);
+			grid.setYOffset(grid.getYOffset() + mouseY - mousePressedY);
+			
+			mousePressedX = mouseX;
+			mousePressedY = mouseY;
+		}
 		
-		grid.setState(xInd, yInd, draggState);
 		redraw();
 	}
 
@@ -183,7 +217,7 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		grid.changeCellsize(-e.getWheelRotation());
+		grid.setCellsize(grid.getCellsize() - e.getWheelRotation());
 		redraw();
 	}
 }
