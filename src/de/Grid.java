@@ -15,6 +15,8 @@ public class Grid {
 	private int numGenerations;
 	private int numAliveCells;
 	
+	private boolean isStable;
+	
 	private boolean showGridlines = true;
 	
 	private int xOffset;
@@ -93,6 +95,7 @@ public class Grid {
 		generations.clear();
 		generations.add(cells);
 		numGenerations = 1;
+		isStable = false;
 	}
 	
 	public void setAllRandom() {
@@ -107,6 +110,7 @@ public class Grid {
 		generations.clear();
 		generations.add(cells);
 		numGenerations = 1;
+		isStable = false;
 	}
 
 	public void setAll(Cellstate state) {
@@ -128,6 +132,7 @@ public class Grid {
 		generations.clear();
 		generations.add(cells);
 		numGenerations = 1;
+		isStable = false;
 	}
 	
 	private void updateNumAlive() {
@@ -146,8 +151,33 @@ public class Grid {
 		return cells[xInd][yInd].getState();
 	}
 
+	public boolean isStable() {
+		return isStable;
+	}
+	
 	public void nextGeneration() {
+		if (isStable) {
+			return;
+		}
+		
+		// calculate next generation
 		Cell[][] next = calculateNextGeneration(cells);
+		
+		// check if stable configuration is reached
+		isStable = true;
+		outer: for (int x = 0; x < numCols; x++) {
+			for (int y = 0; y < numRows; y++) {
+				if (cells[x][y].getState() != next[x][y].getState()) {
+					isStable = false;
+					break outer;
+				}
+			}
+		}
+		// if so break
+		if (isStable) {
+			return;
+		}
+		
 		cells = next;
 		
 		generations.add(next);
@@ -167,6 +197,7 @@ public class Grid {
 		cells = generations.getLast();
 		numGenerations--;
 		updateNumAlive();
+		isStable = false;
 	}
 	
 	public static Cell[][] calculateNextGeneration(Cell[][] grid){

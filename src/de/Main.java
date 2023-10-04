@@ -71,7 +71,7 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 			currentGenerationTimer -= GENERATION_SPEED;
 
 			grid.nextGeneration();
-			if (grid.getNumAliveCells() == 0) {
+			if (grid.getNumAliveCells() == 0 || grid.isStable()) {
 				running = false;
 			}
 			redraw();
@@ -96,6 +96,11 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		graphics.fillRect(0, BOARD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		// draw text
+		graphics.setColor(Color.BLACK);
+		graphics.drawString("Generation: " + grid.getGeneration(), 10, (int) (SCREEN_HEIGHT * 0.915));
+		graphics.drawString("Cellsize: " + grid.getCellsize(), 150, (int) (SCREEN_HEIGHT * 0.915));
+		graphics.drawString("Number of alive cells: " + grid.getNumAliveCells(), 250, (int) (SCREEN_HEIGHT * 0.915));
+		
 		if (running) {
 			graphics.setColor(Color.GREEN);
 			graphics.drawString("Simulation: läuft", 450, (int) (SCREEN_HEIGHT * 0.915));
@@ -103,11 +108,12 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 			graphics.setColor(Color.RED);
 			graphics.drawString("Simulation: angehalten", 450, (int) (SCREEN_HEIGHT * 0.915));
 		}
-		graphics.setColor(Color.BLACK);
-		graphics.drawString("Generation: " + grid.getGeneration(), 10, (int) (SCREEN_HEIGHT * 0.915));
-		graphics.drawString("Cellsize: " + grid.getCellsize(), 150, (int) (SCREEN_HEIGHT * 0.915));
-		graphics.drawString("Number of alive cells: " + grid.getNumAliveCells(), 250, (int) (SCREEN_HEIGHT * 0.915));
+		if (grid.isStable()) {
+			graphics.setColor(Color.GREEN);
+			graphics.drawString("stabile Konfiguration", 600, (int) (SCREEN_HEIGHT * 0.915));
+		}
 		
+		graphics.setColor(Color.BLACK);
 		graphics.drawString(INFO_TEXT_1, 10, (int) (SCREEN_HEIGHT * 0.930));
 		graphics.drawString(INFO_TEXT_2, 10, (int) (SCREEN_HEIGHT * 0.945));
 
