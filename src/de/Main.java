@@ -32,8 +32,8 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 	private static boolean running;
 	private static boolean redraw;
 
-	private static final String INFO_TEXT = "Press 'Space' to run/stop simulation. Press 'G' to toggle the gridlines. "
-			+ "Use the mouse wheel to zoom. Use the right mouse button to change the state of the cells. Use the left mouse button to move.";
+	private static final String INFO_TEXT_1 = "Press 'Space' to run/stop simulation. Press 'G' to toggle the gridlines. Press 'C' to clear the grid.";
+	private static final String INFO_TEXT_2	= "Use the mouse wheel to zoom. Use the right mouse button to change the state of the cells. Use the left mouse button to move.";
 
 	private static Cellstate draggState;
 	private static int mousePressedX;
@@ -95,7 +95,8 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		graphics.drawString("Generation: " + grid.getGeneration(), 10, (int) (SCREEN_HEIGHT * 0.915));
 		graphics.drawString("Cellsize: " + grid.getCellsize(), 150, (int) (SCREEN_HEIGHT * 0.915));
 
-		graphics.drawString(INFO_TEXT, 10, (int) (SCREEN_HEIGHT * 0.930));
+		graphics.drawString(INFO_TEXT_1, 10, (int) (SCREEN_HEIGHT * 0.930));
+		graphics.drawString(INFO_TEXT_2, 10, (int) (SCREEN_HEIGHT * 0.945));
 
 		redraw = false;
 	}
@@ -123,6 +124,16 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 
 		case KeyEvent.VK_G:
 			grid.toggleGridlines();
+			redraw();
+			break;
+			
+		case KeyEvent.VK_C:
+			if (running) {
+				toggleRunning();
+				return;
+			}
+			
+			grid.setAll(Cellstate.DEAD);
 			redraw();
 			break;
 
