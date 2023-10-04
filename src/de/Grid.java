@@ -11,6 +11,8 @@ public class Grid {
 	private int cellsize;
 	private Cell[][] cells;
 	private LinkedList<Cell[][]> generations;
+	private final int listCapacity = 100;
+	private int numGenerations;
 	
 	private boolean showGridlines = true;
 	
@@ -29,6 +31,7 @@ public class Grid {
 		}
 		generations = new LinkedList<>();
 		generations.add(cells);
+		numGenerations = 1;
 		
 		// center board
 		xOffset = (Main.BOARD_WIDTH - numCols * cellsize) / 2;
@@ -78,6 +81,7 @@ public class Grid {
 		
 		generations.clear();
 		generations.add(cells);
+		numGenerations = 1;
 	}
 	
 	public void setState(int xInd, int yInd, Cellstate state) {
@@ -88,6 +92,7 @@ public class Grid {
 		
 		generations.clear();
 		generations.add(cells);
+		numGenerations = 1;
 	}
 	
 	public void setAllRandom() {
@@ -99,6 +104,7 @@ public class Grid {
 		
 		generations.clear();
 		generations.add(cells);
+		numGenerations = 1;
 	}
 
 	public void setAll(Cellstate state) {
@@ -110,6 +116,7 @@ public class Grid {
 
 		generations.clear();
 		generations.add(cells);
+		numGenerations = 1;
 	}
 	
 	public Cellstate getState(int xInd, int yInd) {
@@ -124,6 +131,10 @@ public class Grid {
 		cells = next;
 		
 		generations.add(next);
+		if (generations.size() > listCapacity) {
+			generations.removeFirst();
+		}
+		numGenerations++;
 	}
 
 	public void previousGeneration() {
@@ -133,6 +144,7 @@ public class Grid {
 		
 		generations.removeLast();
 		cells = generations.getLast();
+		numGenerations--;
 	}
 	
 	public static Cell[][] calculateNextGeneration(Cell[][] grid){
@@ -177,7 +189,7 @@ public class Grid {
 	}
 	
 	public int getGeneration() {
-		return generations.size();
+		return numGenerations;
 	}
 	
 	public synchronized void setCellsize(int cellsize) {

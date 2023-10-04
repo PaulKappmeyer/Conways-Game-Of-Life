@@ -48,7 +48,7 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 
 	@Override
 	public void init() {
-		grid = new Grid(100, 100, 10);
+		grid = new Grid(500, 500, 10);
 		grid.setAllRandom();
 		redraw();
 
