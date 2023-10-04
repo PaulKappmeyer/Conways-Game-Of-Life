@@ -2,16 +2,16 @@ package de;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.LinkedList;
 
 public class Grid {
-
+	
 	private int numCols;
 	private int numRows;
 	private int cellsize;
 	private Cell[][] cells;
-
-	private int numGenerations;
-
+	private LinkedList<Cell[][]> generations;
+	
 	private boolean showGridlines = true;
 	
 	private int xOffset;
@@ -27,6 +27,9 @@ public class Grid {
 				cells[x][y] = new Cell(Cellstate.DEAD);
 			}
 		}
+		generations = new LinkedList<>();
+		generations.add(cells);
+		
 		// center board
 		xOffset = (Main.BOARD_WIDTH - numCols * cellsize) / 2;
 		yOffset = (Main.BOARD_HEIGHT - numRows * cellsize) / 2;
@@ -71,10 +74,10 @@ public class Grid {
 		if (xInd < 0 || xInd >= numCols || yInd < 0 || yInd >= numRows) {
 			return;
 		}
-		
 		cells[xInd][yInd].setState(cells[xInd][yInd].getState().toggle());
 		
-		numGenerations = 0;
+		generations.clear();
+		generations.add(cells);
 	}
 	
 	public void setState(int xInd, int yInd, Cellstate state) {
@@ -82,15 +85,9 @@ public class Grid {
 			return;
 		}
 		cells[xInd][yInd].setState(state);
-
-		numGenerations = 0;
-	}
-	
-	public Cellstate getState(int xInd, int yInd) {
-		if (xInd < 0 || xInd >= numCols || yInd < 0 || yInd >= numRows) {
-			return null;
-		}
-		return cells[xInd][yInd].getState();
+		
+		generations.clear();
+		generations.add(cells);
 	}
 	
 	public void setAllRandom() {
@@ -99,7 +96,9 @@ public class Grid {
 				cells[x][y].setStateRandom();
 			}	
 		}
-		numGenerations = 0;
+		
+		generations.clear();
+		generations.add(cells);
 	}
 
 	public void setAll(Cellstate state) {
@@ -109,24 +108,38 @@ public class Grid {
 			}
 		}
 
-		numGenerations = 0;
+		generations.clear();
+		generations.add(cells);
+	}
+	
+	public Cellstate getState(int xInd, int yInd) {
+		if (xInd < 0 || xInd >= numCols || yInd < 0 || yInd >= numRows) {
+			return null;
+		}
+		return cells[xInd][yInd].getState();
 	}
 
 	public void nextGeneration() {
-		Cellstate[][] states = calculateNextGeneration(cells);
-		for (int x = 0; x < numCols; x++) {
-			for (int y = 0; y < numRows; y++) {
-				cells[x][y].setState(states[x][y]);
-			}
-		}
-		numGenerations++;
+		Cell[][] next = calculateNextGeneration(cells);
+		cells = next;
+		
+		generations.add(next);
 	}
 
-	public static Cellstate[][] calculateNextGeneration(Cell[][] grid){
+	public void previousGeneration() {
+		if (generations.size() < 2) {
+			return;
+		}
+		
+		generations.removeLast();
+		cells = generations.getLast();
+	}
+	
+	public static Cell[][] calculateNextGeneration(Cell[][] grid){
 		// calculate next generation
 		int numCols = grid.length;
 		int numRows = grid[0].length;
-		Cellstate[][] next = new Cellstate[numCols][numRows];
+		Cell[][] next = new Cell[numCols][numRows];
 
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {
@@ -142,19 +155,19 @@ public class Grid {
 				int numAliveNeighbours = numAlive - grid[x][y].getState().getValue();
 
 				// default value is dead
-				next[x][y] = Cellstate.DEAD;
+				next[x][y] = new Cell(Cellstate.DEAD);
 
 				// apply rules for alive
 				switch (grid[x][y].getState()) {
 				case DEAD:
 					if (numAliveNeighbours == 3) {
-						next[x][y] = Cellstate.ALIVE;
+						next[x][y].setState(Cellstate.ALIVE);
 					}
 					break;
 
 				case ALIVE:
 					if (numAliveNeighbours == 2 || numAliveNeighbours == 3) {
-						next[x][y] = Cellstate.ALIVE;
+						next[x][y].setState(Cellstate.ALIVE);
 					}
 					break;
 				}
@@ -164,7 +177,7 @@ public class Grid {
 	}
 	
 	public int getGeneration() {
-		return numGenerations;
+		return generations.size();
 	}
 	
 	public synchronized void setCellsize(int cellsize) {

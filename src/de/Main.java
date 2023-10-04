@@ -32,13 +32,15 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 	private static boolean running;
 	private static boolean redraw;
 
-	private static final String INFO_TEXT_1 = "Press 'Space' to run/stop simulation. Press 'G' to toggle the gridlines. Press 'C' to clear the grid.";
-	private static final String INFO_TEXT_2	= "Use the mouse wheel to zoom. Use the right mouse button to change the state of the cells. Use the left mouse button to move.";
+	private static final String INFO_TEXT_1 = "Press 'Space' to run/stop simulation. Press 'G' to toggle the gridlines. Press 'C' to clear the grid."
+			+ "Use the arrow keys to step through the simulation.";
+	private static final String INFO_TEXT_2	= "Use the mouse wheel to zoom. Use the right mouse button to change the state of the cells. "
+			+ "Use the left mouse button to move.";
 
 	private static Cellstate draggState;
 	private static int mousePressedX;
 	private static int mousePressedY;
-
+	
 	public static void main(String[] args) {
 		Main main = new Main();
 		main.start("Conways Game Of Life", SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -56,7 +58,7 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		window.addMouseMotionListener(this);
 		window.addMouseWheelListener(this);
 	}
-	
+
 	@Override
 	public void update(double tslf) {
 		if (!running) {
@@ -81,15 +83,15 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		// grid background
 		graphics.setColor(Color.WHITE);
 		graphics.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
-		
+
 		// draw grid and cells
 		grid.draw(graphics);
 
-		
+
 		// text background
 		graphics.setColor(Color.LIGHT_GRAY);
 		graphics.fillRect(0, BOARD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
-		
+
 		// draw text
 		graphics.setColor(Color.BLACK);
 		graphics.drawString("Generation: " + grid.getGeneration(), 10, (int) (SCREEN_HEIGHT * 0.915));
@@ -111,6 +113,24 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 
 	@Override
 	public void keyPressed(KeyEvent e) {
+		int keyCode = e.getKeyCode();
+
+		switch (keyCode) {
+		case KeyEvent.VK_LEFT:
+			if (!running) {
+				grid.previousGeneration();
+				redraw();
+			}
+			break;
+			
+		case KeyEvent.VK_RIGHT:
+			if (!running) {
+				grid.nextGeneration();
+				redraw();
+			}
+			break;
+		}
+		
 	}
 
 	@Override
@@ -126,13 +146,13 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 			grid.toggleGridlines();
 			redraw();
 			break;
-			
+
 		case KeyEvent.VK_C:
 			if (running) {
 				toggleRunning();
 				return;
 			}
-			
+
 			grid.setAll(Cellstate.DEAD);
 			redraw();
 			break;
@@ -154,21 +174,21 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 			toggleRunning();
 			return;
 		}
-		
+
 		int mouseX = e.getX() - window.getInsetX();
 		int mouseY = e.getY() - window.getInsetY();
 		int xInd = (mouseX - grid.getXOffset()) / grid.getCellsize();
 		int yInd = (mouseY - grid.getYOffset()) / grid.getCellsize();
-		
+
 		switch (e.getButton()) {
 		case MouseEvent.BUTTON1:
 			grid.toggleState(xInd, yInd);
 			break;
-			
+
 		case MouseEvent.BUTTON3:
 			break;
 		}
-		
+
 		redraw();
 	}
 
@@ -214,11 +234,11 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		if (SwingUtilities.isRightMouseButton(e)) {	
 			grid.setXOffset(grid.getXOffset() + mouseX - mousePressedX);
 			grid.setYOffset(grid.getYOffset() + mouseY - mousePressedY);
-			
+
 			mousePressedX = mouseX;
 			mousePressedY = mouseY;
 		}
-		
+
 		redraw();
 	}
 
