@@ -71,6 +71,9 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 			currentGenerationTimer -= GENERATION_SPEED;
 
 			grid.nextGeneration();
+			if (grid.getNumAliveCells() == 0) {
+				running = false;
+			}
 			redraw();
 		}
 	}
@@ -93,10 +96,18 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 		graphics.fillRect(0, BOARD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		// draw text
+		if (running) {
+			graphics.setColor(Color.GREEN);
+			graphics.drawString("Simulation: läuft", 450, (int) (SCREEN_HEIGHT * 0.915));
+		} else {
+			graphics.setColor(Color.RED);
+			graphics.drawString("Simulation: angehalten", 450, (int) (SCREEN_HEIGHT * 0.915));
+		}
 		graphics.setColor(Color.BLACK);
 		graphics.drawString("Generation: " + grid.getGeneration(), 10, (int) (SCREEN_HEIGHT * 0.915));
 		graphics.drawString("Cellsize: " + grid.getCellsize(), 150, (int) (SCREEN_HEIGHT * 0.915));
-
+		graphics.drawString("Number of alive cells: " + grid.getNumAliveCells(), 250, (int) (SCREEN_HEIGHT * 0.915));
+		
 		graphics.drawString(INFO_TEXT_1, 10, (int) (SCREEN_HEIGHT * 0.930));
 		graphics.drawString(INFO_TEXT_2, 10, (int) (SCREEN_HEIGHT * 0.945));
 
@@ -139,7 +150,9 @@ public class Main extends GameBase implements KeyListener, MouseListener, MouseM
 
 		switch (keyCode) {
 		case KeyEvent.VK_SPACE:
-			toggleRunning();
+			if (grid.getNumAliveCells() > 0) {
+				toggleRunning();
+			}
 			break;
 
 		case KeyEvent.VK_G:

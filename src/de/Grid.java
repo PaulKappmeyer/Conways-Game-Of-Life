@@ -13,6 +13,7 @@ public class Grid {
 	private LinkedList<Cell[][]> generations;
 	private final int listCapacity = 100;
 	private int numGenerations;
+	private int numAliveCells;
 	
 	private boolean showGridlines = true;
 	
@@ -32,6 +33,7 @@ public class Grid {
 		generations = new LinkedList<>();
 		generations.add(cells);
 		numGenerations = 1;
+		numAliveCells = 0;
 		
 		// center board
 		xOffset = (Main.BOARD_WIDTH - numCols * cellsize) / 2;
@@ -77,18 +79,16 @@ public class Grid {
 		if (xInd < 0 || xInd >= numCols || yInd < 0 || yInd >= numRows) {
 			return;
 		}
-		cells[xInd][yInd].setState(cells[xInd][yInd].getState().toggle());
-		
-		generations.clear();
-		generations.add(cells);
-		numGenerations = 1;
+		setState(xInd, yInd, cells[xInd][yInd].getState().toggle());
 	}
 	
 	public void setState(int xInd, int yInd, Cellstate state) {
 		if (xInd < 0 || xInd >= numCols || yInd < 0 || yInd >= numRows) {
 			return;
 		}
+		numAliveCells -= cells[xInd][yInd].getState().getValue();
 		cells[xInd][yInd].setState(state);
+		numAliveCells += cells[xInd][yInd].getState().getValue();
 		
 		generations.clear();
 		generations.add(cells);
@@ -96,9 +96,11 @@ public class Grid {
 	}
 	
 	public void setAllRandom() {
+		numAliveCells = 0;
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {
 				cells[x][y].setStateRandom();
+				numAliveCells += cells[x][y].getState().getValue();
 			}	
 		}
 		
@@ -108,6 +110,15 @@ public class Grid {
 	}
 
 	public void setAll(Cellstate state) {
+		switch(state) {
+		case DEAD:
+			numAliveCells = 0;
+			break;
+			
+		case ALIVE:
+			numAliveCells = numCols * numRows;
+			break;
+		}
 		for (int x = 0; x < numCols; x++) {
 			for (int y = 0; y < numRows; y++) {
 				cells[x][y].setState(state);
@@ -117,6 +128,15 @@ public class Grid {
 		generations.clear();
 		generations.add(cells);
 		numGenerations = 1;
+	}
+	
+	private void updateNumAlive() {
+		numAliveCells = 0;
+		for (int x = 0; x < numCols; x++) {
+			for (int y = 0; y < numRows; y++) {
+				numAliveCells += cells[x][y].getState().getValue();
+			}
+		}
 	}
 	
 	public Cellstate getState(int xInd, int yInd) {
@@ -135,6 +155,7 @@ public class Grid {
 			generations.removeFirst();
 		}
 		numGenerations++;
+		updateNumAlive();
 	}
 
 	public void previousGeneration() {
@@ -145,6 +166,7 @@ public class Grid {
 		generations.removeLast();
 		cells = generations.getLast();
 		numGenerations--;
+		updateNumAlive();
 	}
 	
 	public static Cell[][] calculateNextGeneration(Cell[][] grid){
@@ -186,6 +208,10 @@ public class Grid {
 			}
 		}
 		return next;
+	}
+	
+	public int getNumAliveCells() {
+		return numAliveCells;
 	}
 	
 	public int getGeneration() {
